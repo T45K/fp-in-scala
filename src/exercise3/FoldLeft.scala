@@ -18,7 +18,6 @@ object FoldLeft {
       throw new RuntimeException("StackOverFlowError is expected to be thrown but not")
     } catch {
       case _: StackOverflowError => println("StackOverFlowError occurred")
-      case e: Exception => println(e.getMessage)
     }
   }
 }

@@ -84,4 +84,17 @@ object List {
 
     loop(as, z)
   }
+
+  def reverse[A](as: List[A]): List[A] = foldLeft(as, Nil: List[A])((acc, a) => Cons(a, acc))
+
+  def foldRightViaFoldLeft[A, B](as: List[A], z: B)(f: (A, B) => B): B = {
+    def reversed = reverse(as)
+
+    foldLeft(reversed, z)((b, a) => f(a, b))
+  }
+
+  def append[A](as: List[A], a: A): List[A] = List.reverse(Cons(a, List.reverse(as)))
+
+  def concat[A](ass: List[List[A]]): List[A] =
+    foldRight(ass, Nil: List[A])((as, acc) => foldRight(as, acc)((a, acc) => Cons(a, acc)))
 }
