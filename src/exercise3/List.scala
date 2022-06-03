@@ -87,14 +87,11 @@ object List {
 
   def reverse[A](as: List[A]): List[A] = foldLeft(as, Nil: List[A])((acc, a) => Cons(a, acc))
 
-  def foldRightViaFoldLeft[A, B](as: List[A], z: B)(f: (A, B) => B): B = {
-    def reversed = reverse(as)
+  def foldRightViaFoldLeft[A, B](as: List[A], z: B)(f: (A, B) => B): B = foldLeft(reverse(as), z)((b, a) => f(a, b))
 
-    foldLeft(reversed, z)((b, a) => f(a, b))
-  }
+  def append[A](as: List[A], a: A): List[A] = List.foldRight(as, List(a))(Cons(_, _))
 
-  def append[A](as: List[A], a: A): List[A] = List.reverse(Cons(a, List.reverse(as)))
+  def append[A](as: List[A], as2: List[A]): List[A] = List.foldRight(as, as2)(Cons(_, _))
 
-  def concat[A](ass: List[List[A]]): List[A] =
-    foldRight(ass, Nil: List[A])((as, acc) => foldRight(as, acc)((a, acc) => Cons(a, acc)))
+  def concat[A](ass: List[List[A]]): List[A] = foldRight(ass, Nil: List[A])(append)
 }
