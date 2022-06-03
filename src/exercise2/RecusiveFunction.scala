@@ -1,8 +1,8 @@
-package exercise2_1
+package exercise2
 
 import scala.annotation.tailrec
 
-object Main {
+object RecusiveFunction {
   def main(args: Array[String]): Unit = {
     println(fib(5))
   }

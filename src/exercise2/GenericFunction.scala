@@ -1,8 +1,8 @@
-package exercise2_2
+package exercise2
 
 import scala.annotation.tailrec
 
-object Main {
+object GenericFunction {
 
   def main(args: Array[String]): Unit = {
     println(Array(7, 9, 13).isSorted((x: Int, y: Int) => x <= y))
