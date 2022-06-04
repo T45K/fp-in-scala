@@ -108,6 +108,9 @@ object List {
 
   def flatMap[A, B](as: List[A])(f: A => List[B]): List[B] = foldRight(as, Nil: List[B])((a, acc) => append(f(a), acc))
 
+  // 模範解答
+  def flatMap2[A, B](as: List[A])(f: A => List[B]): List[B] = concat(map(as)(f))
+
   def filterViaFlatMap[A](as: List[A])(f: A => Boolean): List[A] = flatMap(as)(a => if (f(a)) Nil else List(a))
 
   def plusWith(as1: List[Int], as2: List[Int]): List[Int] =
@@ -119,6 +122,13 @@ object List {
       }
     })._1
 
+  // 模範解答
+  def plusWith2(as1: List[Int], as2: List[Int]): List[Int] = (as1, as2) match {
+    case (_, Nil) => Nil
+    case (Nil, _) => Nil
+    case (Cons(ah, at), Cons(bh, bt)) => Cons(ah + bh, plusWith2(at, bt))
+  }
+
   def zipWith[A, B, C](as: List[A], bs: List[B])(f: (A, B) => C): List[C] =
     if (List.length(as) != List.length(bs)) Nil
     else List.foldRight(as, (Nil, bs.pipe(List.reverse)): (List[C], List[B]))((a, b) => {
@@ -127,4 +137,23 @@ object List {
         case Cons(head, tail) => (Cons(f(a, head), acc), tail)
       }
     })._1
+
+  def zipWith2[A, B, C](as: List[A], bs: List[B])(f: (A, B) => C): List[C] = (as, bs) match {
+    case (_, Nil) => Nil
+    case (Nil, _) => Nil
+    case (Cons(ah, at), Cons(bh, bt)) => Cons(f(ah, bh), zipWith2(at, bt)(f))
+  }
+
+  def startsWith[A](l1: List[A], l2: List[A]): Boolean =
+    if (List.length(l2) > List.length(l1)) false
+    else if (l2 == Nil) true
+    else foldRight(zipWith2(l1, l2)(_ == _), true)(_ && _)
+
+  @tailrec
+  def hasSubsequence[A](sup: List[A], sub: List[A]): Boolean =
+    if (length(sub) > length(sup)) false
+    else if (startsWith(sup, sub)) true
+    else sup match {
+      case Cons(_, tail) => hasSubsequence(tail, sub)
+    }
 }
