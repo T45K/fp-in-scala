@@ -1,6 +1,7 @@
 package exercise3
 
 import scala.annotation.tailrec
+import scala.util.chaining.scalaUtilChainingOps
 
 sealed trait List[+A]
 
@@ -89,9 +90,41 @@ object List {
 
   def foldRightViaFoldLeft[A, B](as: List[A], z: B)(f: (A, B) => B): B = foldLeft(reverse(as), z)((b, a) => f(a, b))
 
+  // asの長さに比例する時間が必要
   def append[A](as: List[A], a: A): List[A] = List.foldRight(as, List(a))(Cons(_, _))
 
   def append[A](as: List[A], as2: List[A]): List[A] = List.foldRight(as, as2)(Cons(_, _))
 
+  // assのサイズをN、全要素の数をMとするとO(N+M)≒O(M)
   def concat[A](ass: List[List[A]]): List[A] = foldRight(ass, Nil: List[A])(append)
+
+  def incrementEach(ints: List[Int]): List[Int] = foldRight(ints, Nil: List[Int])((int, acc) => Cons(int + 1, acc))
+
+  def doubleToStringEach(ds: List[Double]): List[String] = foldRight(ds, Nil: List[String])((d, acc) => Cons(d.toString, acc))
+
+  def map[A, B](as: List[A])(f: A => B): List[B] = foldRight(as, Nil: List[B])((a, acc) => Cons(f(a), acc))
+
+  def filter[A](as: List[A])(f: A => Boolean): List[A] = foldRight(as, Nil: List[A])((a, acc) => if (f(a)) acc else Cons(a, acc))
+
+  def flatMap[A, B](as: List[A])(f: A => List[B]): List[B] = foldRight(as, Nil: List[B])((a, acc) => append(f(a), acc))
+
+  def filterViaFlatMap[A](as: List[A])(f: A => Boolean): List[A] = flatMap(as)(a => if (f(a)) Nil else List(a))
+
+  def plusWith(as1: List[Int], as2: List[Int]): List[Int] =
+    if (List.length(as1) != List.length(as2)) Nil
+    else List.foldRight(as1, (Nil, as2.pipe(List.reverse)): (List[Int], List[Int]))((a, b) => {
+      val (acc, rest) = b
+      rest match {
+        case Cons(head, tail) => (Cons(a + head, acc), tail) // ここが評価されるのは右側から
+      }
+    })._1
+
+  def zipWith[A, B, C](as: List[A], bs: List[B])(f: (A, B) => C): List[C] =
+    if (List.length(as) != List.length(bs)) Nil
+    else List.foldRight(as, (Nil, bs.pipe(List.reverse)): (List[C], List[B]))((a, b) => {
+      val (acc, rest) = b
+      rest match {
+        case Cons(head, tail) => (Cons(f(a, head), acc), tail)
+      }
+    })._1
 }
