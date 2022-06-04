@@ -11,5 +11,13 @@ object TreeFunctions {
     println(Tree.depth(tree))
 
     println(Tree.map(tree)(_ + 1))
+
+    println(Tree.sizeViaFold(tree))
+
+    println(Tree.maximumViaFold(tree))
+
+    println(Tree.depthViaFold(tree))
+
+    println(Tree.mapViaFold(tree)(_ + 1))
   }
 }
