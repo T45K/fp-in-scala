@@ -15,5 +15,13 @@ object StreamFunctions {
     println(generator().drop(5).toList)
 
     println(generator().takeWhile(_ % 2 == 0).toList)
+
+    println(generator().foldRight(0)(_ + _))
+
+    println(generator().exists(_ == 1))
+
+    println(generator().forAll(_ <= 5))
+
+    println(generator().headOptionViaRightFold)
   }
 }
