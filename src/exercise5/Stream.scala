@@ -40,6 +40,14 @@ trait Stream[+A] {
   def headOptionViaRightFold: Option[A] = this.foldRight(None: Option[A])((a, _) => Some(a))
 
   def map[B](f: A => B): Stream[B] = this.foldRight(Empty: Stream[B])((a, b) => cons(f(a), b))
+
+  def filter(f: A => Boolean): Stream[A] = this.foldRight(Empty: Stream[A])((a, b) => if (f(a)) cons(a, b) else b)
+
+//  def append[B >: A](b: => B): Stream[B] = this.foldRight(Stream.apply(b))(cons(_, _))
+
+  def append[B >: A](b: => Stream[B]): Stream[B] = this.foldRight(b)(cons(_, _))
+
+  def flatMap[B](f: A => Stream[B]): Stream[B] = this.foldRight(Empty: Stream[B])((a, b) => f(a).append(b))
 }
 
 case object Empty extends Stream[Nothing]
