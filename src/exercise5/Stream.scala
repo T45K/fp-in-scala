@@ -43,7 +43,7 @@ trait Stream[+A] {
 
   def filter(f: A => Boolean): Stream[A] = this.foldRight(Empty: Stream[A])((a, b) => if (f(a)) cons(a, b) else b)
 
-//  def append[B >: A](b: => B): Stream[B] = this.foldRight(Stream.apply(b))(cons(_, _))
+  //  def append[B >: A](b: => B): Stream[B] = this.foldRight(Stream.apply(b))(cons(_, _))
 
   def append[B >: A](b: => Stream[B]): Stream[B] = this.foldRight(b)(cons(_, _))
 
@@ -68,4 +68,17 @@ object Stream {
   def apply[A](as: A*): Stream[A] =
     if (as.isEmpty) empty
     else cons(as.head, apply(as.tail: _*))
+
+  def constant[A](a: A): Stream[A] = cons(a, constant(a))
+
+  def from(n: Int): Stream[Int] = cons(n, from(n + 1))
+
+  def fibs(n1: Int = 0, n2: Int = 1): Stream[Int] = cons(n1, fibs(n2, n1 + n2))
+
+  def unfold[A, S](z: S)(f: S => Option[(A, S)]): Stream[A] = {
+    def next = f(z)
+
+    if (next.isDefined) cons(next.get._1, unfold(next.get._2)(f))
+    else empty
+  }
 }
