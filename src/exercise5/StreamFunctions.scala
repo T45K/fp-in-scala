@@ -29,5 +29,9 @@ object StreamFunctions {
     println(generator().append(Stream.apply(6, 7, 8)).toList)
 
     println(Stream.apply(Stream.apply(1, 2, 3), Stream.apply(4, 5, 6)).flatMap(identity).toList)
+
+    println(Stream.apply(1, 2, 3).startsWith(Stream.apply(1, 2)))
+
+    println(generator().tails.map(_.toList).toList)
   }
 }

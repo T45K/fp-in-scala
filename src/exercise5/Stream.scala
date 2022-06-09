@@ -1,6 +1,8 @@
 package exercise5
 
-import exercise5.Stream.{cons, empty}
+import exercise5.Stream.{cons, empty, unfold}
+
+import scala.util.chaining.scalaUtilChainingOps
 
 trait Stream[+A] {
   def headOption: Option[A] = this match {
@@ -48,6 +50,22 @@ trait Stream[+A] {
   def append[B >: A](b: => Stream[B]): Stream[B] = this.foldRight(b)(cons(_, _))
 
   def flatMap[B](f: A => Stream[B]): Stream[B] = this.foldRight(Empty: Stream[B])((a, b) => f(a).append(b))
+
+  def startsWith[B >: A](s: Stream[B]): Boolean = unfold((this, s)) {
+    case (_, Empty) => None
+    case (Cons(h1, t1), Cons(h2, t2)) => Some(h1() == h2(), (t1(), t2()))
+  }.forAll(identity)
+
+  def tails: Stream[Stream[A]] = unfold(this) {
+    case Cons(h, t) => Some(Cons(h, t), t())
+    case _ => None
+  }
+
+  def scanRight[B](z: B)(f: (A, => B) => B): Stream[B] = foldRight(z -> Stream.apply(z)) { (a, b) =>
+    // BはFunction型の糖衣構文なので、参照する度に評価される
+    lazy val b1 = b
+    f(a, b1._1).pipe(r => r -> cons(r, b1._2))
+  }._2
 }
 
 case object Empty extends Stream[Nothing]
@@ -75,10 +93,34 @@ object Stream {
 
   def fibs(n1: Int = 0, n2: Int = 1): Stream[Int] = cons(n1, fibs(n2, n1 + n2))
 
-  def unfold[A, S](z: S)(f: S => Option[(A, S)]): Stream[A] = {
-    def next = f(z)
+  def unfold[A, S](z: S)(f: S => Option[(A, S)]): Stream[A] = f(z) match {
+    case Some((a, s)) => cons(a, unfold(s)(f))
+    case _ => Empty
+  }
 
-    if (next.isDefined) cons(next.get._1, unfold(next.get._2)(f))
-    else empty
+  def fromViaUnfold(n: Int): Stream[Int] = unfold(n)(n => Some(n, n + 1))
+
+  def constantViaUnfold[A](a: A): Stream[A] = unfold(a)(a => Some(a, a))
+
+  def mapViaUnfold[A, B](a: Stream[A])(f: A => B): Stream[B] = unfold(a) {
+    case Cons(h, t) => Some(f(h()), t())
+    case _ => None
+  }
+
+  def takeViaUnfold[A](a: Stream[A])(n: Int): Stream[A] = unfold((a, n)) {
+    case (Cons(h, t), n) if n > 0 => Some(h(), (t(), n - 1))
+    case _ => None
+  }
+
+  def zipWithViaUnfold[A, B, C](a: Stream[A], b: Stream[B])(f: (A, B) => C): Stream[C] = unfold(a, b) {
+    case (Cons(h1, t1), Cons(h2, t2)) => Some(f(h1(), h2()), (t1(), t2()))
+    case _ => None
+  }
+
+  def zipAll[A, B](a: Stream[A], b: Stream[B]): Stream[(Option[A], Option[B])] = unfold(a, b) {
+    case (Empty, Empty) => None
+    case (Cons(h, t), Empty) => Some((Some(h()), None), (t(), empty))
+    case (Empty, Cons(h, t)) => Some((None, Some(h())), (empty, t()))
+    case (Cons(h1, t1), Cons(h2, t2)) => Some((Some(h1()), Some(h2())), (t1(), t2()))
   }
 }
