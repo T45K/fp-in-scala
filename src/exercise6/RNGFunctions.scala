@@ -9,5 +9,9 @@ object RNGFunctions {
     println(RNG.double(rng))
 
     println(RNG.ints(10)(rng))
+
+    println(Rand.intsViaSequence(10)(rng))
+
+    println(Rand.sequence(List.fill(10)(Rand.nonNegativeLessThan(10)))(rng))
   }
 }
