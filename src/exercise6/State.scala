@@ -119,7 +119,7 @@ object State {
   def traverse[S, A, B](as: List[A])(f: A => State[S, B]): State[S, List[B]] =
     as.foldRight(unit[S, List[B]](Nil))((a, acc) => f(a).map2(acc)(_ :: _))
 
-  def get[S]: State[S, S] = State(s => (s, s))
+  def get[S]: State[S, S] = State(s => s -> s)
 
   def set[S](s: S): State[S, Unit] = State(_ => () -> s)
 

@@ -10,6 +10,14 @@ case class Machine(locked: Boolean, candies: Int, coins: Int)
 
 // 何もわからん
 // Stateの畳み込み？
+// updateの実行は遅延化される。traverse実行時じゃなくてrun実行時。なるほど
+// traverse内部はmap2を使っているので、入れ子構造が繰り返される感じ？
+// map2は2つのStateを繋ぎ合わせて一つのStateにする操作
+// val state3 = map2(state1, state2)(f)
+// val state4 = map2(state, map2(state1, state2)(f))(f)
+// ...
+// 再帰構造
+// 状態変化を数珠繋ぎにできるっていう発想が大事っぽい
 object Main {
   def main(args: Array[String]): Unit = {
     println(simulateMachine(List(Coin, Turn, Coin, Turn, Coin, Turn, Coin, Turn)).run(Machine(locked = true, 5, 10))._1)
