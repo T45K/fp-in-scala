@@ -2,6 +2,7 @@ package parallelism
 
 import java.util.concurrent.{ExecutorService, Future}
 import scala.concurrent.duration.TimeUnit
+import scala.util.chaining.scalaUtilChainingOps
 
 object Par {
   type Par[A] = ExecutorService => Future[A]
@@ -83,6 +84,12 @@ object Par {
   def parMap[A, B](ps: List[A])(f: A => B): Par[List[B]] = {
     val fbs: List[Par[B]] = ps.map(asyncF(f))
     sequence(fbs)
+  }
+
+  def parFilter[A](as: List[A])(f: A => Boolean): Par[List[A]] = fork {
+    as.map(asyncF(a => if (f(a)) List(a) else List.empty))
+      .pipe(sequence)
+      .pipe(map(_)(_.flatten))
   }
 }
 
